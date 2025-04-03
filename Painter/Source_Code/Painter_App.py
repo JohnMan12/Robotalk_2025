@@ -13,7 +13,7 @@ def open_Serial():
     ports = serial.tools.list_ports.comports()
     for port in ports:
         details = [port.description, port.hwid, port.name,  port.interface, port.manufacturer, port.pid, port.serial_number]
-        if "Arduino" in details or "FIDI" in details or "USB Serial Port (COM" in details:
+        if any("Arduino" in str(s) for s in details) or any("FIDI" in str(s) for s in details) or any("USB Serial Port (COM" in str(s) for s in details):
             try:
                 connection = serial.Serial(port.device, 9600, timeout=1)
                 print(f"Arduino found at: {port.device}")
