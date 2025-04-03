@@ -9,19 +9,21 @@ import serial.tools.list_ports
 
 # --------------------------------------------- COMMUNICATION -------------------------------------------------- #
 
-def find_Serial():
+def open_Serial():
     ports = serial.tools.list_ports.comports()
     for port in ports:
         details = [port.description, port.hwid, port.name,  port.interface, port.manufacturer, port.pid, port.serial_number]
         if "Arduino" in details or "FIDI" in details:
             print(f"Arduino found at: {port.device}")
-            return port.device
+            connection = serial.Serial(port.device, 9600, timeout=1)
+            return connection
     while(True):
         user_input = input("Manually enter Arduino COM: ")
-        for port in ports:
-            if user_input in port.device:
-                return port.device
-        print("Invalid COM port. Please try again.")
+        try:
+            connection = serial.Serial(user_input, 9600, timeout=1)
+            return connection  # Return connection if successful
+        except serial.SerialException as e:
+            print(f"Error opening {user_input}: {e}. Please try again.")
         
 
 def send_serial_data(ser, message):
@@ -66,6 +68,7 @@ class PaintApp(QWidget):
         # Try to Open Serial Connection
         self.ser = None
         try:
+            self.ser = open_Serial()
             self.ser = serial.Serial(find_Serial(), 9600, timeout=1)
         except serial.SerialException as e:
             print(f"Error: {e}")
